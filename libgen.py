@@ -7,7 +7,7 @@ import re
 
 
 proxies = {
-    'http': 'socks5h://127.0.0.1:9050',
+    'http' : 'socks5h://127.0.0.1:9050',
     'https': 'socks5h://127.0.0.1:9050'
 }
 
@@ -32,55 +32,37 @@ ll = "http://libgen.rs/search.php?req=quantum&lg_topic=libgen&open=0&view=simple
 pp = requests.get(ll, proxies=proxies)
 ss = BeautifulSoup(pp.text, "html.parser")
 
-# needs fiding tables in another pages also
+# needs finding tables in another pages also
 tb = ss.find("table", class_="c")
-tr = tb.find_all("tr")
-tr = tr[1:]
-
-# find atuhors
-tr[1].find_all('a', href=re.compile(r'author'))
-
-# id is the first table data
-id_ = tr[1].find('td')
-
-# title of the book
-# ISBN numbers?
-title = tr[1].find('a', href=re.compile(r'index\.php')).text
-
-# table datas
-# 0: id
-# 1: authors
-# 2: title and series
-# 3: pubisher
-# 4: year
-# 5: pages
-# 6: language
-# 7: size
-# 8: extension
-# 9 onward: mirrors
-tds = tr[1].find_all('td')
-
-gen_id    = tds[0].text
-author    = tds[1].text
-title     = tds[2].find('a', href=re.compile(r'index\.php')).text
-publisher = tds[3].text
-year      = tds[4].text
-pages     = tds[5].text
-language  = tds[6].text
-size      = tds[7].text
-extension = tds[8].text
-mirrors   = [link.find('a')["href"] for link in tds[9:]]
+trs = tb.find_all("tr")
+trs = trs[1:]
 
 
-# number of results
+results = []
 num_results = ss.find("td", text=re.compile("files found")).text
-# will result in error if there is no files found
 num_results = int(num_results.partition("files")[0])
 
+for tr in trs:
+    tds = tr.find_all('td')
+    result = {}
+    #TODO: catch exceptions
+    result["id"]        = int(tds[0].text)
+    result["author"]    = tds[1].text
+    #TODO: extract ISBN from title
+    result["title"]     = tds[2].find('a', href=re.compile(r'index\.php')).text
+    result["publisher"] = tds[3].text
+    result["year"]      = tds[4].text
+    result["pages"]     = tds[5].text
+    result["language"]  = tds[6].text
+    result["size"]      = tds[7].text
+    result["extension"] = tds[8].text
+    result["mirrors"]   = [link.find('a')["href"] for link in tds[9:]]
+    results.append(result)
 
 
 # downlod part
-link = mirrors[0]
+# link = mirrors[0]
+link = results[0]["mirrors"][0]
 page = requests.get(link, proxies=proxies)
 soup = BeautifulSoup(page.content, "html.parser")
 download_link = soup.find('a', text=re.compile("GET"))["href"]
@@ -114,4 +96,30 @@ def download(url):
             progress.update(len(data))
 
 
-download(download_link)
+# download(download_link)
+
+color = {
+        'purple': '\x1b[95m',
+        'cyan': '\x1b[96m',
+        'darkcyan': '\x1b[36m',
+        'blue': '\x1b[94m',
+        'green': '\x1b[92m',
+        'yellow': '\x1b[93m',
+        'red': '\x1b[91m',
+        'bold': '\x1b[1m',
+        'underline': '\x1b[4m',
+        'end': '\x1b[0m'
+        }
+def prety_print(result, index):
+    #TODO: make dashes dynamic
+    _id = index + 1
+    print("\nID: {}\n{}".format(_id, "----" + '-'*len(str(_id))))
+    print("      Title: {}".format(color["bold"] + result["title"]  + color["end"]))
+    print("     Author: {}".format(color["bold"] + result["author"] + color["end"]))
+    print("       Year: {}".format(result["year"]))
+    print("  Publisher: {}".format(result["publisher"]))
+    print("     Format: {}".format(result["extension"]))
+
+# prety_print(results[2])
+for index, result in enumerate(results):
+    prety_print(result, index)
