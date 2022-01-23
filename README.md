@@ -1,2 +1,2 @@
 # LibGenDl
-Download Documents from Library Genesis.
+Command Line Interface for Library Genesis.
