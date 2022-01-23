@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import urllib
 import re
 
 from read_conf import get_proxies
@@ -36,9 +37,10 @@ def get_mirrors(url, sort=False):
 #TODO: add other mirrors, currently works for libgen.rs
 def parse_query(search_query, mirror_url=None):
     search_resolution = 100
+    search_query_urlencoded = urllib.parse.quote_plus(search_query)
     search_url = ("http://libgen.rs/search.php?req={}&lg_topic=libgen&"
                   "open=0&view=simple&res={}&phrase=1&column=def")\
-                  .format(search_query, search_resolution)
+                  .format(search_query_urlencoded, search_resolution)
     page = requests.get(search_url, proxies=proxies)
     soup = BeautifulSoup(page.content, "html.parser")
     
