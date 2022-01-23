@@ -1,15 +1,11 @@
 from bs4 import BeautifulSoup
-from tqdm import tqdm
 import requests
-import sys
-import cgi
 import re
 
+from read_conf import get_proxies
+from display import pretty_print
 
-proxies = {
-    'http' : 'socks5h://127.0.0.1:9050',
-    'https': 'socks5h://127.0.0.1:9050'
-}
+proxies = get_proxies()
 
 url = "https://sci-hub.41610.org/library-genesis"
 page = requests.get(url)
@@ -76,50 +72,11 @@ download_link = soup.find('a', text=re.compile("GET"))["href"]
 # with open(name, "wb") as _file:
     # _file.write(r.content)
 
-def download(url):
-    buffer_size = 1024
-    response = requests.get(url, stream=True, proxies=proxies)
-    file_size = int(response.headers.get("Content-Length", 0))
-    # file_name = str(r.headers["Content-Disposition"].partition("filename=")[2]).strip('"')
-    default_filename = title + '.' + extension
-    content_disposition = response.headers.get("Content-Disposition")
-    if content_disposition:
-        value, params = cgi.parse_header(content_disposition)
-        filename = params.get("filename", default_filename)
-    else:
-        filename = default_filename
-    
-    progress = tqdm(response.iter_content(buffer_size), f"Downloading {title}", total=file_size, unit="B", unit_scale=True, unit_divisor=1024)
-    with open(filename, "wb") as f:
-        for data in progress.iterable:
-            f.write(data)
-            progress.update(len(data))
 
 
 # download(download_link)
 
-color = {
-        'purple': '\x1b[95m',
-        'cyan': '\x1b[96m',
-        'darkcyan': '\x1b[36m',
-        'blue': '\x1b[94m',
-        'green': '\x1b[92m',
-        'yellow': '\x1b[93m',
-        'red': '\x1b[91m',
-        'bold': '\x1b[1m',
-        'underline': '\x1b[4m',
-        'end': '\x1b[0m'
-        }
-def prety_print(result, index):
-    #TODO: make dashes dynamic
-    _id = index + 1
-    print("\nID: {}\n{}".format(_id, "----" + '-'*len(str(_id))))
-    print("      Title: {}".format(color["bold"] + result["title"]  + color["end"]))
-    print("     Author: {}".format(color["bold"] + result["author"] + color["end"]))
-    print("       Year: {}".format(result["year"]))
-    print("  Publisher: {}".format(result["publisher"]))
-    print("     Format: {}".format(result["extension"]))
 
 # prety_print(results[2])
 for index, result in enumerate(results):
-    prety_print(result, index)
+    pretty_print(result, index)
