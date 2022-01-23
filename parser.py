@@ -2,25 +2,33 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-from read_conf import get_proxies
 from display import pretty_print
+from read_conf import get_proxies
 
 proxies = get_proxies()
 
-url = "https://sci-hub.41610.org/library-genesis"
-page = requests.get(url)
-soup = BeautifulSoup(page.content, "html.parser")
+mirrors_url = "https://sci-hub.41610.org/library-genesis"
 
-gen_links = soup.find_all('a', {"rel":"nofollow noopener"})
+#TODO: make fast mirror list optional and onetime
+def get_mirrors(url):
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    mirrors_pool = soup.find_all('a', {"rel":"nofollow noopener"})
+    mirrors_pool = [link["href"] for link in mirrors_pool]
+    # sort mirrors based on response time
+    mirrors_res_time = []
+    for link in mirrors_pool:
+        try:
+            response = requests.get(link, proxies=proxies)
+            res_time = response.elapsed.total_seconds()
+            mirrors_res_time.append([link, res_time])
+        except:
+            pass
+    mirrors_res_time.sort(key:lambda x: x[1])
+    mirrors_pool = [url_res_time[0] for url_res_time in mirrors_res_time]
+    return mirrors_pool
 
 
-pool = []
-# for link in gen_links:
-    # link = link["href"]
-    # page = requests.get(link, proxies=proxies)
-    # if page.status_code == 200:
-        # pool.append(link)
-pool.append(gen_links[0]["href"])
 
 
 # if there are pages more than (get by the number of results and resolution) add &page=2 to the link
