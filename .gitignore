@@ -130,3 +130,6 @@ dmypy.json
 
 # swap files
 *.swp
+
+# todo file
+todo.txt
