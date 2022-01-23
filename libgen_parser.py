@@ -2,15 +2,12 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-from display import pretty_print
 from read_conf import get_proxies
 
 proxies = get_proxies()
 
-mirrors_url = "https://sci-hub.41610.org/library-genesis"
-
-#TODO: make fast mirror list optional and onetime
-def get_mirrors(url):
+#TODO: make fast mirror list sort optional and onetime.
+def get_mirrors(url, sort=False):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     mirrors_pool = soup.find_all('a', {"rel":"nofollow noopener"})
@@ -20,71 +17,69 @@ def get_mirrors(url):
     for link in mirrors_pool:
         try:
             response = requests.get(link, proxies=proxies)
-            res_time = response.elapsed.total_seconds()
-            mirrors_res_time.append([link, res_time])
+            if sort:
+                res_time = response.elapsed.total_seconds()
+                mirrors_res_time.append([link, res_time])
+            else:
+                mirrors_res_time.append(link)
         except:
             pass
-    mirrors_res_time.sort(key:lambda x: x[1])
-    mirrors_pool = [url_res_time[0] for url_res_time in mirrors_res_time]
+    if sort:
+        mirrors_res_time.sort(key=lambda x: x[1])
+        mirrors_pool = [url_res_time[0] for url_res_time in mirrors_res_time]
+    else:
+        mirrors_pool = mirrors_res_time
+
     return mirrors_pool
 
 
+#TODO: add other mirrors, currently works for libgen.rs
+def parse_query(search_query, mirror_url=None):
+    search_resolution = 100
+    search_url = ("http://libgen.rs/search.php?req={}&lg_topic=libgen&"
+                  "open=0&view=simple&res={}&phrase=1&column=def")\
+                  .format(search_query, search_resolution)
+    page = requests.get(search_url, proxies=proxies)
+    soup = BeautifulSoup(page.content, "html.parser")
+    
+    table = soup.find("table", class_='c')
+    table_rows = table.find_all("tr")[1:]
+
+    num_results = soup.find("td", text=re.compile("files found")).text
+    num_results = int(num_results.partition("files")[0])
+    #TODO: if there are more pages than one, query those also if asked.
+    if num_results > search_resolution:
+        other_pages = True
+    else:
+        other_pages = False
+
+    results = []
+    for table_row in table_rows:
+        table_data = table_row.find_all('td')
+        result = {}
+        #TODO: catch exceptions
+        result["id"]        = int(table_data[0].text)
+        result["author"]    = table_data[1].text
+        #TODO: extract ISBN from title
+        result["title"]     = table_data[2].find('a', href=re.compile(r'index\.php')).text
+        result["publisher"] = table_data[3].text
+        result["year"]      = table_data[4].text
+        result["pages"]     = table_data[5].text
+        result["language"]  = table_data[6].text
+        result["size"]      = table_data[7].text
+        result["extension"] = table_data[8].text
+        result["mirrors"]   = [link.find('a')["href"] for link in table_data[9:]]
+        results.append(result)
+
+    return results
 
 
-# if there are pages more than (get by the number of results and resolution) add &page=2 to the link
-ll = "http://libgen.rs/search.php?req=quantum&lg_topic=libgen&open=0&view=simple&res=100&phrase=1&column=def"
-pp = requests.get(ll, proxies=proxies)
-ss = BeautifulSoup(pp.text, "html.parser")
+#TODO: get the id of document to be downloaded from user.
+def get_download_url(query_results):
+    mirror_link = query_results[0]["mirrors"][0]
+    page = requests.get(mirror_link, proxies=proxies)
+    soup = BeautifulSoup(page.content, "html.parser")
+    download_link = soup.find('a', text=re.compile("GET"))["href"]
 
-# needs finding tables in another pages also
-tb = ss.find("table", class_="c")
-trs = tb.find_all("tr")
-trs = trs[1:]
+    return download_link
 
-
-results = []
-num_results = ss.find("td", text=re.compile("files found")).text
-num_results = int(num_results.partition("files")[0])
-
-for tr in trs:
-    tds = tr.find_all('td')
-    result = {}
-    #TODO: catch exceptions
-    result["id"]        = int(tds[0].text)
-    result["author"]    = tds[1].text
-    #TODO: extract ISBN from title
-    result["title"]     = tds[2].find('a', href=re.compile(r'index\.php')).text
-    result["publisher"] = tds[3].text
-    result["year"]      = tds[4].text
-    result["pages"]     = tds[5].text
-    result["language"]  = tds[6].text
-    result["size"]      = tds[7].text
-    result["extension"] = tds[8].text
-    result["mirrors"]   = [link.find('a')["href"] for link in tds[9:]]
-    results.append(result)
-
-
-# downlod part
-# link = mirrors[0]
-link = results[0]["mirrors"][0]
-page = requests.get(link, proxies=proxies)
-soup = BeautifulSoup(page.content, "html.parser")
-download_link = soup.find('a', text=re.compile("GET"))["href"]
-
-# r = requests.get(download_link, proxies=proxies)
-# n = r.headers["Content-Disposition"]
-# _, __, name = n.partition("filename=")
-# name = name.strip('"')
-
-# progress bar?
-# with open(name, "wb") as _file:
-    # _file.write(r.content)
-
-
-
-# download(download_link)
-
-
-# prety_print(results[2])
-for index, result in enumerate(results):
-    pretty_print(result, index)
