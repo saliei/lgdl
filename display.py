@@ -1,14 +1,14 @@
 color = {
-        'purple': '\x1b[95m',
-        'cyan': '\x1b[96m',
-        'darkcyan': '\x1b[36m',
-        'blue': '\x1b[94m',
-        'green': '\x1b[92m',
-        'yellow': '\x1b[93m',
-        'red': '\x1b[91m',
-        'bold': '\x1b[1m',
+        'purple'   : '\x1b[95m',
+        'cyan'     : '\x1b[96m',
+        'darkcyan' : '\x1b[36m',
+        'blue'     : '\x1b[94m',
+        'green'    : '\x1b[92m',
+        'yellow'   : '\x1b[93m',
+        'red'      : '\x1b[91m',
+        'bold'     : '\x1b[1m',
         'underline': '\x1b[4m',
-        'end': '\x1b[0m'
+        'end'      : '\x1b[0m'
         }
 
 def pretty_print(result, index):
