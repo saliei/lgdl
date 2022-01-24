@@ -35,7 +35,8 @@ def get_mirrors(url, sort=False):
 
 
 #TODO: add other mirrors, currently works for libgen.rs
-def parse_query(search_query, mirror_url=None):
+def parse_query(search_query, mirrors=None):
+    #TODO: get resolution from conf file.
     search_resolution = 100
     search_query_urlencoded = urllib.parse.quote_plus(search_query)
     search_url = ("http://libgen.rs/search.php?req={}&lg_topic=libgen&"
