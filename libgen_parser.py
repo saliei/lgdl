@@ -77,11 +77,14 @@ def parse_query(search_query, mirror_url=None):
 
 
 #TODO: get the id of document to be downloaded from user.
-def get_download_url(query_results):
-    mirror_link = query_results[0]["mirrors"][0]
-    page = requests.get(mirror_link, proxies=proxies)
-    soup = BeautifulSoup(page.content, "html.parser")
-    download_link = soup.find('a', text=re.compile("GET"))["href"]
+def get_download_url(query_results, indices):
+    download_links = []
+    for index in indices:
+        mirror_link = query_results[index-1]["mirrors"][0]
+        page = requests.get(mirror_link, proxies=proxies)
+        soup = BeautifulSoup(page.content, "html.parser")
+        download_link = soup.find('a', text=re.compile("GET"))["href"]
+        download_links.append(download_link)
 
-    return download_link
+    return download_links
 
