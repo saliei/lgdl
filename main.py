@@ -10,11 +10,20 @@ mirrors_url = "https://sci-hub.41610.org/library-genesis"
 
 parser = argparse.ArgumentParser(prog="lgdl", \
         description="Command Line Interface for Library Genesis.")
-parser.add_argument("-s", "--search", nargs='?', type=str, help="search query")
+parser.add_argument("pos_search", nargs='?', type=str, help="search query")
+parser.add_argument("-s", "--search", type=str, help="search query")
 args = parser.parse_args()
 
-mirrors = libgen_parser.get_mirrors(mirrors_url)
-query_results = libgen_parser.parse_query(args.search)
+if (args.pos_search is None) and (args.search is None):
+    print(parser.print_help())
+    exit(1)
+elif (args.pos_search is None) and (args.search is not None):
+    search_query = args.search
+else:
+    search_query = args.pos_search
+
+# mirrors = libgen_parser.get_mirrors(mirrors_url)
+query_results = libgen_parser.parse_query(search_query)
 
 for index, result in enumerate(query_results):
     pretty_print(result, index)
