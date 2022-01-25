@@ -2,7 +2,6 @@
 import argparse
 import sys
 
-sys.path.insert(1, "src")
 import libgen_parser
 from display import pretty_print
 from download import download
