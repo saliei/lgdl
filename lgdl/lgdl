@@ -57,7 +57,7 @@ if search:
             else:
                 print("Indices Not accepted!")
                 raise
-    download_links = libgen_parser.get_download_url(query_results, indices)
-    for link in download_links:
-        download(link)
+    titles, download_links = libgen_parser.get_download_url(query_results, indices)
+    for title, link in zip(titles, download_links):
+        download(link, title)
 
