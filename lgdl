@@ -2,6 +2,7 @@
 import argparse
 import sys
 
+sys.path.insert(1, "src")
 import libgen_parser
 from display import pretty_print
 from download import download
@@ -19,7 +20,6 @@ if len(sys.argv) < 2:
 else:
     args = parser.parse_args()
 
-
 if args.update:
     print("Fast tracking mirrors...")
     mirrors_url = "https://sci-hub.41610.org/library-genesis"
@@ -34,22 +34,17 @@ search = False
 if args.pos_search:
     search = True
     search_query = args.pos_search
-    print(search_query)
 elif args.search:
     search = True
     search_query = args.search
-    print(search_query)
-
 
 if search:
     query_results = libgen_parser.parse_query(search_query, mirrors=mirrors)
     
     for index, result in enumerate(query_results):
         pretty_print(result, index)
-
     ids = sys.stdin.readline()
     ids = ids.rstrip().replace(' ', '').split(',')
-
     indices = []
     for _id in ids:
         try:
@@ -62,10 +57,7 @@ if search:
             else:
                 print("Indices Not accepted!")
                 raise
-
     download_links = libgen_parser.get_download_url(query_results, indices)
     for link in download_links:
         download(link)
 
-
-            
