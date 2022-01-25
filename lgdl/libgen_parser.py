@@ -3,11 +3,9 @@ import requests
 import urllib
 import re
 
-from read_conf import get_proxies
+from read_config import parse_config_file
+config = parse_config_file()
 
-proxies = get_proxies()
-
-#TODO: make fast mirror list sort optional and onetime.
 def get_mirrors(url, sort=False):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
@@ -17,7 +15,7 @@ def get_mirrors(url, sort=False):
     mirrors_res_time = []
     for link in mirrors_pool:
         try:
-            response = requests.get(link, proxies=proxies)
+            response = requests.get(link, proxies=config["proxies"])
             if sort:
                 res_time = response.elapsed.total_seconds()
                 mirrors_res_time.append([link, res_time])
@@ -36,13 +34,11 @@ def get_mirrors(url, sort=False):
 
 #TODO: add other mirrors, currently works for libgen.rs
 def parse_query(search_query, mirrors=None):
-    #TODO: get resolution from conf file.
-    search_resolution = 100
     search_query_urlencoded = urllib.parse.quote_plus(search_query)
     search_url = ("http://libgen.rs/search.php?req={}&lg_topic=libgen&"
                   "open=0&view=simple&res={}&phrase=1&column=def")\
-                  .format(search_query_urlencoded, search_resolution)
-    page = requests.get(search_url, proxies=proxies)
+                  .format(search_query_urlencoded, config["resolution"])
+    page = requests.get(search_url, proxies=config["proxies"])
     soup = BeautifulSoup(page.content, "html.parser")
     
     table = soup.find("table", class_='c')
@@ -51,7 +47,7 @@ def parse_query(search_query, mirrors=None):
     num_results = soup.find("td", text=re.compile("files found")).text
     num_results = int(num_results.partition("files")[0])
     #TODO: if there are more pages than one, query those also if asked.
-    if num_results > search_resolution:
+    if num_results > config["resolution"]:
         other_pages = True
     else:
         other_pages = False
@@ -77,15 +73,17 @@ def parse_query(search_query, mirrors=None):
     return results
 
 
-#TODO: get the id of document to be downloaded from user.
 def get_download_url(query_results, indices):
+    titles = []
     download_links = []
     for index in indices:
+        title = query_results[index-1]["title"]
+        titles.append(title)
         mirror_link = query_results[index-1]["mirrors"][0]
-        page = requests.get(mirror_link, proxies=proxies)
+        page = requests.get(mirror_link, proxies=config["proxies"])
         soup = BeautifulSoup(page.content, "html.parser")
         download_link = soup.find('a', text=re.compile("GET"))["href"]
         download_links.append(download_link)
 
-    return download_links
+    return (titles, download_links)
 
