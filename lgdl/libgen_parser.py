@@ -3,7 +3,7 @@ import requests
 import urllib
 import re
 
-from read_config import parse_config_file
+from .read_config import parse_config_file
 config = parse_config_file()
 
 def get_mirrors(url, sort=False):
