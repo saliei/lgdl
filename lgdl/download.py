@@ -1,11 +1,10 @@
 import requests
-import sys
-import cgi
 from tqdm import tqdm
 
-from read_config import parse_config_file
+from .read_config import parse_config_file
 config = parse_config_file()
 
+#TODO: add option in config file for the filename, title or full name
 def download(url, title):
     buffer_size = 1024
     response = requests.get(url, stream=True, proxies=config["proxies"])
