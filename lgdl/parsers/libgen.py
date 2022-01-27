@@ -3,10 +3,7 @@ import requests
 import urllib
 import re
 
-from .read_config import parse_config_file
-config = parse_config_file()
-
-def get_mirrors(url, sort=False):
+def get_mirrors(url, config, sort=False):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     mirrors_pool = soup.find_all('a', {"rel":"nofollow noopener"})
@@ -33,7 +30,7 @@ def get_mirrors(url, sort=False):
 
 
 #TODO: add other mirrors, currently works for libgen.rs
-def parse_query(search_query, mirrors=None):
+def parse_query(search_query, config, mirrors=None):
     search_query_urlencoded = urllib.parse.quote_plus(search_query)
     search_url = ("http://libgen.rs/search.php?req={}&lg_topic=libgen&"
                   "open=0&view=simple&res={}&phrase=1&column=def")\
@@ -73,7 +70,7 @@ def parse_query(search_query, mirrors=None):
     return results
 
 
-def get_download_url(query_results, indices):
+def get_download_url(query_results, indices, config):
     titles = []
     download_links = []
     for index in indices:
