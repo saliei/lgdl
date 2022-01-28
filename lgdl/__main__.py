@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 import argparse
 import sys, os
-# sys.path.append(os.path.join(os.path.dirname(__file__), "parsers"))
-# sys.path.append(os.path.join(os.path.dirname(__file__), "utils"))
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "lgdl")))
+sys.path.insert(0, os.path.abspath("."))
 
-from lgdl.parsers import libgen
-from lgdl.utils.display import pretty_print
-from lgdl.utils.download import download
-from lgdl.utils.read_config import parse_config_file
+from parsers import libgen
+from utils.display import pretty_print
+from utils.download import download
+from utils.read_config import parse_config_file
 
 
 def main():
     config = parse_config_file()
 
-    parser = argparse.ArgumentParser(prog="libgen-dl", \
+    parser = argparse.ArgumentParser(prog="lgdl", \
             description="Command Line Interface for Library Genesis.")
     parser.add_argument("pos_search", nargs='?', type=str, help="search query")
     parser.add_argument("-s", "--search", type=str, help="search query")

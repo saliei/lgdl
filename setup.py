@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import sys, os
 
 setup(
@@ -12,8 +12,9 @@ setup(
         author_email = "saeidaliei2019@gmail.com",
         license = "Apache-2.0",
         packages = ["lgdl"],
+        # package = find_packages(),
         install_requires = ["beautifulsoup4", "tqdm"],
-        entry_points = {"console_scripts": ["lgdl = bin.lgdl:main"]},
+        entry_points = {"console_scripts": ["lgdl = lgdl.__main__:main"]},
         # data_files = [(os.path.expanduser("~/.config"), ["lgdl/lgdlrc"])],
         package_data = {"lgdl": ["config/lgdlrc"]},
 
