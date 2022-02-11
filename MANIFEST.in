@@ -1,1 +1,2 @@
-include lgdl/lgdlrc
+include config/lgdl.conf
+inlcude config/mirrors
