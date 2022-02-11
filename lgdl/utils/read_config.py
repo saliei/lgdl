@@ -52,10 +52,10 @@ def read_conf_file(config_path):
 
 
 def copy_config_file():
-    config_path = os.path.join(os.path.expanduser('~'), ".config", "lgdl", "lgdlrc")
+    config_path = os.path.join(os.path.expanduser('~'), ".config", "lgdl", "lgdl.conf")
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     if not os.path.exists(config_path):
-        shutil.copy("lgdlrc", config_path)
+        shutil.copy("lgdl.conf", config_path)
 
     return config_path
 
